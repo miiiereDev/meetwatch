@@ -1,13 +1,77 @@
-# MeetWatch
+<div align="center">
 
-Monitors the status of online students in Google Meet sessions: who is online, who left, who
-never joined, who was late — per class session, with live updates and attendance exports.
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/banner-dark.svg" />
+    <img src="docs/screenshots/banner-light.svg" alt="MeetWatch — live student monitoring for Google Meet" width="100%" />
+  </picture>
 
-Built as a school system-integration project, MeetWatch is provider-agnostic: the same
-dashboard works with **simulated data** (default, zero credentials), a **live Google Meet
+**Know who's in class.** MeetWatch tracks every student in a Google Meet session — who is
+online, who left, who never joined, who was late — with live updates, attendance percentages,
+and exportable records.
+
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![pnpm](https://img.shields.io/badge/pnpm-11-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![TanStack Query](https://img.shields.io/badge/TanStack%20Query-5-FF4154?logo=reactquery&logoColor=white)](https://tanstack.com/query)
+[![Fastify](https://img.shields.io/badge/Fastify-5-000000?logo=fastify&logoColor=white)](https://fastify.dev)
+[![SQLite](https://img.shields.io/badge/SQLite-embedded-003B57?logo=sqlite&logoColor=white)](https://sqlite.org)
+[![Zod](https://img.shields.io/badge/Zod-4-3E67B1?logo=zod&logoColor=white)](https://zod.dev)
+[![Vitest](https://img.shields.io/badge/Vitest-3-729B1B?logo=vitest&logoColor=white)](https://vitest.dev)
+![SSE](https://img.shields.io/badge/SSE-live%20updates-0891b2)
+![Tests](https://img.shields.io/badge/Tests-142%20passing-16a34a)
+
+Built as a school **system-integration project**. Provider-agnostic by design: the same
+dashboard runs on **simulated data** (default, zero credentials), a **live Google Meet
 call** (Meet REST API v2), or an **imported attendance report** (CSV).
 
-## Quick start
+</div>
+
+---
+
+## 🖥️ See it in action
+
+**Dashboard** — a live session: summary cards, searchable roster with attendance bars,
+late/unstable flags, unknown-participant mapping, and the activity feed.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-dark.svg" />
+  <img src="docs/screenshots/dashboard-light.svg" alt="MeetWatch dashboard with live session monitoring" width="100%" />
+</picture>
+
+**History** — any ended session, with per-student attendance and the pass-mark summary.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/history-dark.svg" />
+  <img src="docs/screenshots/history-light.svg" alt="MeetWatch history view with attendance record" width="100%" />
+</picture>
+
+**Settings** — provider switching, the demo simulator, thresholds, roster, and CSV import.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/settings-dark.svg" />
+  <img src="docs/screenshots/settings-light.svg" alt="MeetWatch settings with simulator, thresholds and roster" width="100%" />
+</picture>
+
+> These previews are vector renders generated from the real domain data model — run
+> `pnpm previews` to regenerate them after UI changes. No screenshots involved.
+
+## ✨ Features
+
+- 📡 **Live monitoring** — join/leave activity streams over SSE; in-call durations tick per second.
+- 🟢🟠 **Status at a glance** — online / left / absent / late summary cards for the running session.
+- 📊 **Attendance %** — time in call ÷ session time per student, with pass-mark bars and fail markers.
+- 🚩 **Late & unstable flags** — first join after the threshold, or 3+ rejoins, is flagged per student.
+- 🧩 **Unknown-participant mapping** — Meet guests that don't match the roster are surfaced for
+  one-click mapping; the mapping is remembered for future sessions.
+- 📤 **CSV export** of any session record, and 📥 **CSV import** of real Google Meet attendance reports.
+- 🔐 **Live Google Meet tracking** via the Meet REST API v2 with OAuth (optional).
+- 🎛️ **Built-in simulator** — realistic demo sessions at adjustable speed; zero credentials needed.
+- 🌓 **Light & dark themes** — the UI follows your system preference automatically.
+
+## 🚀 Quick start
 
 ```bash
 pnpm install
@@ -22,7 +86,7 @@ That starts:
 The default simulator seeds a 25-student roster and schedules a demo session that begins
 about 30 seconds after boot. Student activity appears on the Dashboard in real time.
 
-## The 3-minute demo
+## 🎬 The 3-minute demo
 
 1. **Watch a live session.** On the Dashboard, the seeded session shows summary cards
    (online / left / absent / late), a searchable student table with attendance bars, an
@@ -39,7 +103,7 @@ about 30 seconds after boot. Student activity appears on the Dashboard in real t
    (see [docs/GOOGLE_SETUP.md](docs/GOOGLE_SETUP.md)), connect an account and switch the
    provider to _Google Meet (live)_ to track a real meeting by its Meet code.
 
-## Architecture
+## 🧭 Architecture
 
 ```mermaid
 flowchart LR
@@ -72,7 +136,7 @@ flowchart LR
 - **Live updates are SSE only** (no websockets): `activity`, `refresh`, `sessions`,
   `provider` events drive TanStack Query invalidations; durations tick client-side.
 
-## Concepts
+## 📖 Concepts
 
 | Term                   | Meaning                                                                    |
 | ---------------------- | -------------------------------------------------------------------------- |
@@ -87,7 +151,7 @@ Matching order: exact email → stored mapping → fuzzy display-name match (Jar
 with a shared token) → email local-part. Anything unmatched is surfaced for manual mapping
 rather than guessed — see `docs/ASSUMPTIONS.md` for every interpretation decision.
 
-## Providers
+## 🔌 Providers
 
 | Provider              | Use case                               | Needs                                                                         |
 | --------------------- | -------------------------------------- | ----------------------------------------------------------------------------- |
@@ -98,7 +162,7 @@ rather than guessed — see `docs/ASSUMPTIONS.md` for every interpretation decis
 Switch providers at runtime from **Settings**; the runner records provider status (idle /
 running / needs auth / error) and the UI surfaces it as a banner.
 
-## Configuration (environment)
+## ⚙️ Configuration (environment)
 
 | Variable                                                            | Default                  | Purpose                                          |
 | ------------------------------------------------------------------- | ------------------------ | ------------------------------------------------ |
@@ -112,32 +176,43 @@ running / needs auth / error) and the UI surfaces it as a banner.
 | `MEET_POLL_INTERVAL_MS`                                             | `15000`                  | Google provider poll cadence                     |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` | —                        | See [docs/GOOGLE_SETUP.md](docs/GOOGLE_SETUP.md) |
 
-## Development
+## 🛠️ Development
 
-| Command          | What it does                  |
-| ---------------- | ----------------------------- |
-| `pnpm dev`       | Run API + web in watch mode   |
-| `pnpm build`     | Production build of both apps |
-| `pnpm test`      | All Vitest suites (api + web) |
-| `pnpm typecheck` | TypeScript project checks     |
-| `pnpm lint`      | ESLint                        |
-| `pnpm format`    | Prettier write                |
-| `pnpm quality`   | typecheck + lint + test       |
+| Command          | What it does                            |
+| ---------------- | --------------------------------------- |
+| `pnpm dev`       | Run API + web in watch mode             |
+| `pnpm build`     | Production build of both apps           |
+| `pnpm test`      | All Vitest suites (api + web)           |
+| `pnpm typecheck` | TypeScript project checks               |
+| `pnpm lint`      | ESLint                                  |
+| `pnpm format`    | Prettier write                          |
+| `pnpm quality`   | typecheck + lint + test                 |
+| `pnpm previews`  | Regenerate the README UI previews (SVG) |
 
 Layout:
 
 ```
-apps/api    Fastify API: domain, repositories (plain SQL), providers, SSE, migrations
-apps/web    React dashboard: pages, components, query hooks, SSE wiring
-docs/       Assumptions log, Google setup, sample attendance CSV
+apps/api         Fastify API: domain, repositories (plain SQL), providers, SSE, migrations
+apps/web         React dashboard: pages, components, query hooks, SSE wiring
+apps/web/scripts Preview generator: JSX + satori renders docs/screenshots/*.svg
+docs/            Assumptions log, Google setup, sample attendance CSV, generated previews
 ```
 
-Notes:
+## 📚 Documentation
+
+- [docs/GOOGLE_SETUP.md](docs/GOOGLE_SETUP.md) — enabling the live Google Meet provider
+  (OAuth consent, scopes, refresh-token storage and security notes).
+- [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) — every interpretation decision the project
+  makes, with reasons.
+- [docs/samples/meet-attendance-sample.csv](docs/samples/meet-attendance-sample.csv) — a
+  real-shaped attendance report for the CSV import demo.
+
+## ⚠️ Notes & known limitations
 
 - Delete `apps/api/data/` for a fresh demo boot (roster and demo sessions re-seed).
 - Restart quirk: simulator sessions created before a restart replay their elapsed simulated
   time immediately (catch-up), so an old demo session may finish right after boot — start a
   new one from Settings.
-- Known limitation: on Google, signed-in Workspace participants can appear as opaque user IDs
-  (see [docs/GOOGLE_SETUP.md](docs/GOOGLE_SETUP.md)); map them once from the Unknown
-  participants panel.
+- On Google, signed-in Workspace participants can appear as opaque user IDs (see
+  [docs/GOOGLE_SETUP.md](docs/GOOGLE_SETUP.md)); map them once from the Unknown participants
+  panel.
