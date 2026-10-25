@@ -12,11 +12,9 @@ export const importRoutes: FastifyPluginAsync = async (app) => {
   app.post('/import/attendance', async (req, reply) => {
     const csv = typeof req.body === 'string' ? req.body : '';
     if (!csv.trim()) {
-      return reply
-        .code(400)
-        .send({
-          error: 'send the attendance report as the request body with content-type text/csv',
-        });
+      return reply.code(400).send({
+        error: 'send the attendance report as the request body with content-type text/csv',
+      });
     }
 
     const query = req.query as {

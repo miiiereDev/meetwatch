@@ -17,7 +17,7 @@ export const settingsRoutes: FastifyPluginAsync = async (app) => {
       minAttendancePct: Number(settings.get(ATT_KEY) ?? '') || env.MIN_ATTENDANCE_PCT,
       google: {
         configured: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
-        connected: false,
+        connected: Boolean(settings.get('google_refresh_token')),
       },
     };
   }

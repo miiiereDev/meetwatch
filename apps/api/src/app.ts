@@ -9,6 +9,7 @@ import { rosterRoutes } from './routes/roster.js';
 import { mappingRoutes } from './routes/mappings.js';
 import { settingsRoutes } from './routes/settings.js';
 import { importRoutes } from './routes/import.js';
+import { googleRoutes } from './routes/google.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -73,6 +74,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Fastify
   await app.register(mappingRoutes, { prefix: '/api' });
   await app.register(settingsRoutes, { prefix: '/api' });
   await app.register(importRoutes, { prefix: '/api' });
+  await app.register(googleRoutes, { prefix: '/api' });
 
   app.addHook('onClose', async (instance) => {
     await instance.ctx.close();

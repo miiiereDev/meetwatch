@@ -14,6 +14,7 @@ import { SettingRepo } from './repositories/settings.js';
 import { StudentRepo } from './repositories/students.js';
 import { IngestService } from './services/ingest.js';
 import { ProviderRunner } from './services/providerRunner.js';
+import { GoogleAuthService } from './services/googleAuth.js';
 import { SseHub } from './services/sse.js';
 import type { ProviderLogger, ProviderName } from './providers/types.js';
 import type { SimulatorOptions } from './providers/simulator.js';
@@ -29,6 +30,7 @@ export interface ServerContext {
   hub: SseHub;
   ingest: IngestService;
   runner: ProviderRunner;
+  googleAuth: GoogleAuthService;
   /** Computes the live report for a session at an effective "now". */
   report(session: ClassSession, wallMs?: number): SessionStatusReport;
   close(): Promise<void>;
@@ -73,12 +75,13 @@ export function buildContext(options: BuildContextOptions): ServerContext {
 
   const ingest = new IngestService({ sessions, intervals, students, mappings, hub, logger });
   const services = { ingest, hub, sessions, intervals, students, settings, logger };
+  const googleAuth = new GoogleAuthService(env, settings);
 
   if (settings.get('provider') === null) {
     settings.set('provider', env.PROVIDER);
   }
   const providerName = (settings.get('provider') ?? env.PROVIDER) as ProviderName;
-  const runner = new ProviderRunner(services, providerName);
+  const runner = new ProviderRunner(services, providerName, env);
 
   return {
     env,
@@ -91,6 +94,7 @@ export function buildContext(options: BuildContextOptions): ServerContext {
     hub,
     ingest,
     runner,
+    googleAuth,
     report(session: ClassSession, wallMs = Date.now()): SessionStatusReport {
       const now = sessionEffectiveNow(session, wallMs);
       return computeSessionReport({

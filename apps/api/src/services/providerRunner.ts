@@ -1,5 +1,7 @@
 import { SimulatorProvider } from '../providers/simulator.js';
 import { CsvImportProvider } from '../providers/csvImport.js';
+import { GoogleMeetProvider } from '../providers/googleMeet.js';
+import type { Env } from '../env.js';
 import type {
   MeetProvider,
   ProviderName,
@@ -11,15 +13,12 @@ import type {
  * Creates a provider by name. The rest of the system never knows which
  * provider is running — everything goes through MeetProvider.
  */
-export function createProvider(name: ProviderName): MeetProvider {
+export function createProvider(name: ProviderName, env: Env): MeetProvider {
   switch (name) {
     case 'simulator':
       return new SimulatorProvider();
     case 'google':
-      // Wired in the google provider milestone; fails loudly until configured.
-      throw new Error(
-        'google provider requires Google OAuth configuration (see docs/GOOGLE_SETUP.md)',
-      );
+      return new GoogleMeetProvider({ env });
     case 'csv':
       return new CsvImportProvider();
   }
@@ -36,6 +35,7 @@ export class ProviderRunner {
   constructor(
     private readonly services: ProviderServices,
     private configuredName: ProviderName,
+    private readonly env: Env,
   ) {}
 
   currentName(): ProviderName | null {
@@ -80,7 +80,7 @@ export class ProviderRunner {
   private async startProvider(name: ProviderName): Promise<void> {
     this.lastError = null;
     try {
-      const provider = createProvider(name);
+      const provider = createProvider(name, this.env);
       this.provider = provider;
       await provider.start(this.services);
       this.services.logger.info(
