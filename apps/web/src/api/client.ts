@@ -1,6 +1,7 @@
 import type {
   AppSettings,
   ClassSession,
+  CsvImportResult,
   Mapping,
   SessionDetail,
   SessionListItem,
@@ -61,6 +62,15 @@ export const api = {
       // browser typed the chosen file.
       { method: 'POST', body: new Blob([csv], { type: 'text/csv' }) },
     ),
+
+  importAttendanceCsv: (args: { file: File; meetingCode: string; title?: string }) => {
+    const params = new URLSearchParams({ meetingCode: args.meetingCode });
+    if (args.title) params.set('title', args.title);
+    return request<CsvImportResult>(`/import/attendance?${params.toString()}`, {
+      method: 'POST',
+      body: new Blob([args.file], { type: 'text/csv' }),
+    });
+  },
 
   // Mappings
   listMappings: () => request<{ mappings: Mapping[] }>('/mappings'),

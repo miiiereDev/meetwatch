@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { AppSettings, ProviderName, Student } from '../api/types';
 import {
+  useAttendanceImport,
   useCreateSession,
   useDeleteMapping,
   useMappings,
@@ -53,6 +54,7 @@ export function Settings() {
       />
       <RosterCard students={roster?.students ?? []} isLoading={rosterLoading} />
       <MappingsCard />
+      <AttendanceImportCard settings={settings} />
       <GoogleCard settings={settings} />
     </div>
   );
@@ -466,6 +468,86 @@ function MappingsCard() {
       {deleteMapping.isError ? (
         <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">
           {String(deleteMapping.error)}
+        </p>
+      ) : null}
+    </Card>
+  );
+}
+
+function AttendanceImportCard({ settings }: { settings: AppSettings }) {
+  const importCsv = useAttendanceImport();
+  const [meetingCode, setMeetingCode] = useState('');
+  const [title, setTitle] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [result, setResult] = useState<string | null>(null);
+
+  async function onFileChosen(file: File | undefined) {
+    if (!file || !meetingCode.trim()) return;
+    setResult(null);
+    const r = await importCsv.mutateAsync({
+      meetingCode: meetingCode.trim(),
+      title: title.trim() || undefined,
+      file,
+    });
+    const failed = r.errors.length;
+    setResult(
+      `Imported ${r.ingested} participant record${r.ingested === 1 ? '' : 's'} into ${r.createdSession ? 'a new session' : 'the existing session'}${failed ? ` (${failed} row(s) skipped)` : ''}.`,
+    );
+    if (fileRef.current) fileRef.current.value = '';
+  }
+
+  return (
+    <Card title="Attendance CSV import">
+      <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+        Upload a Google Meet attendance report (the CSV a meeting owner can download). It is turned
+        into a completed session with per-student attendance. Requires the{' '}
+        <span className="font-medium">csv</span> provider — currently{' '}
+        <span className="font-medium">{settings.provider}</span>. A sample file lives in{' '}
+        <code className="rounded bg-slate-100 px-1 dark:bg-slate-700">docs/samples/</code>.
+      </p>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-slate-600 dark:text-slate-300">Meeting code</span>
+          <input
+            value={meetingCode}
+            onChange={(e) => setMeetingCode(e.target.value)}
+            placeholder="e.g. hist-bio-101"
+            className={inputClass}
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="sr-only">Session title</span>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title (optional)"
+            className={inputClass}
+          />
+        </label>
+        <label
+          className={`${buttonClass} inline-flex cursor-pointer items-center ${
+            importCsv.isPending || !meetingCode.trim() ? 'pointer-events-none opacity-40' : ''
+          }`}
+        >
+          {importCsv.isPending ? 'Importing…' : 'Choose CSV…'}
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="sr-only"
+            disabled={importCsv.isPending || !meetingCode.trim()}
+            onChange={(e) => void onFileChosen(e.target.files?.[0])}
+          />
+        </label>
+      </div>
+      {result ? (
+        <p role="status" className="mt-2 text-sm text-green-700 dark:text-green-400">
+          {result}
+        </p>
+      ) : null}
+      {importCsv.isError ? (
+        <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">
+          Import failed: {String(importCsv.error)}
         </p>
       ) : null}
     </Card>

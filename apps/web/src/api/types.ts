@@ -113,3 +113,11 @@ export interface AppSettings {
   minAttendancePct: number;
   google: { configured: boolean; connected: boolean };
 }
+
+export interface CsvImportResult {
+  sessionId: string;
+  createdSession: boolean;
+  ingested: number;
+  skipped: number;
+  errors: { row: number; error: string }[];
+}

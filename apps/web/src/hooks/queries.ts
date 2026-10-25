@@ -92,3 +92,14 @@ export function useRosterMutations() {
   const importCsv = useMutation({ mutationFn: api.importRosterCsv, onSuccess: invalidate });
   return { create, remove, importCsv };
 }
+
+export function useAttendanceImport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.importAttendanceCsv,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['sessions'] });
+      void qc.invalidateQueries({ queryKey: ['session'] });
+    },
+  });
+}
