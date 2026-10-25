@@ -80,6 +80,16 @@ export class StudentRepo {
     return { ...existing, name, section };
   }
 
+  update(id: string, patch: Partial<Pick<Student, 'name' | 'email' | 'section'>>): Student | null {
+    const existing = this.get(id);
+    if (!existing) return null;
+    const next: Student = { ...existing, ...patch };
+    this.db
+      .prepare('UPDATE students SET name = ?, email = ?, section = ? WHERE id = ?')
+      .run(next.name, next.email, next.section, id);
+    return next;
+  }
+
   delete(id: string): boolean {
     const info = this.db.prepare('DELETE FROM students WHERE id = ?').run(id);
     return info.changes > 0;
