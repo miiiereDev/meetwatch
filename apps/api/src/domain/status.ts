@@ -65,6 +65,21 @@ export interface SessionStatusReport {
 /** Minutes → ms. */
 const MINUTE = 60_000;
 
+/**
+ * The reference "now" for a session: wall clock plus the simulator's clock
+ * offset, clamped to the session window. Ended sessions use their full window.
+ */
+export function sessionEffectiveNow(session: ClassSession, wallMs: number): Date {
+  const startMs = Date.parse(session.startsAt);
+  const endMs = session.endsAt ? Date.parse(session.endsAt) : null;
+  if (session.status === 'ended') {
+    return new Date(endMs ?? wallMs);
+  }
+  const simNow = wallMs + session.clockOffsetMs;
+  const upper = endMs ?? Number.POSITIVE_INFINITY;
+  return new Date(Math.min(Math.max(simNow, Math.min(startMs, upper)), upper));
+}
+
 function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }
