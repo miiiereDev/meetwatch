@@ -1,13 +1,29 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // SSE pushes keep live data fresh; this only avoids spinner flicker.
+      staleTime: 5_000,
+      retry: 1,
+    },
+  },
+});
 
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('missing #root element');
 
 createRoot(rootEl).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </QueryClientProvider>
   </StrictMode>,
 );
