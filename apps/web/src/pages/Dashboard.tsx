@@ -67,6 +67,7 @@ export function Dashboard() {
                 isLoading={detail.isLoading}
                 nowMs={nowMs}
                 caption={`Students in ${listSession.title || listSession.meetingCode}`}
+                passMark={listSession.minAttendancePct}
               />
             </Card>
             <Card title="Live activity">

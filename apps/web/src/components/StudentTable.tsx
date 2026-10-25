@@ -18,6 +18,8 @@ interface StudentTableProps {
   nowMs: number;
   caption: string;
   emptyHint?: string;
+  /** Attendance % at or above which a student counts as passing (default 75). */
+  passMark?: number;
 }
 
 export function StudentTable({
@@ -26,6 +28,7 @@ export function StudentTable({
   nowMs,
   caption,
   emptyHint,
+  passMark = 75,
 }: StudentTableProps) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<StatusFilter>('all');
@@ -133,7 +136,7 @@ export function StudentTable({
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {rows.map((s) => (
-                <StudentRow key={s.studentId} student={s} nowMs={nowMs} />
+                <StudentRow key={s.studentId} student={s} nowMs={nowMs} passMark={passMark} />
               ))}
             </tbody>
           </table>
@@ -168,18 +171,26 @@ function SortButton({
   );
 }
 
-function StudentRow({ student, nowMs }: { student: StudentStatus; nowMs: number }) {
+function StudentRow({
+  student,
+  nowMs,
+  passMark,
+}: {
+  student: StudentStatus;
+  nowMs: number;
+  passMark: number;
+}) {
   const liveMs =
     student.status === 'online' && student.currentStintStartedAt
       ? nowMs - Date.parse(student.currentStintStartedAt)
       : student.totalMs;
 
-  const barColor =
-    student.attendancePct >= 75
-      ? 'bg-green-500'
-      : student.attendancePct >= 40
-        ? 'bg-amber-500'
-        : 'bg-red-400';
+  const passing = student.attendancePct >= passMark;
+  const barColor = passing
+    ? 'bg-green-500'
+    : student.attendancePct >= passMark / 2
+      ? 'bg-amber-500'
+      : 'bg-red-400';
 
   return (
     <tr className={student.status === 'online' ? 'bg-green-50/50 dark:bg-green-900/10' : undefined}>
@@ -213,8 +224,11 @@ function StudentRow({ student, nowMs }: { student: StudentStatus; nowMs: number 
               style={{ width: `${Math.min(100, student.attendancePct)}%` }}
             />
           </div>
-          <span className="tabular-nums text-slate-600 dark:text-slate-300">
+          <span
+            className={`tabular-nums ${passing ? 'text-slate-600 dark:text-slate-300' : 'font-semibold text-red-700 dark:text-red-400'}`}
+          >
             {percentLabel(student.attendancePct)}
+            {passing ? '' : ' !'}
           </span>
         </div>
       </td>

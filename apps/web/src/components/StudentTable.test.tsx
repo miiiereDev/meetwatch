@@ -40,6 +40,24 @@ describe('StudentTable', () => {
     expect(within(table).getAllByText('88%')).toHaveLength(1);
   });
 
+  it('marks students below the pass mark with a warning cue', () => {
+    render(
+      <StudentTable
+        statuses={[
+          makeStudent({ studentId: 's1', name: 'Ava Thompson', attendancePct: 88 }),
+          makeStudent({ studentId: 's2', name: 'Ben Ode', status: 'left', attendancePct: 40 }),
+        ]}
+        isLoading={false}
+        nowMs={NOW}
+        caption="passmark"
+        passMark={75}
+      />,
+    );
+    const table = screen.getByRole('table', { name: 'passmark' });
+    expect(within(table).getAllByText('88%')).toHaveLength(1);
+    expect(within(table).getAllByText('40% !')).toHaveLength(1);
+  });
+
   it('shows loading skeletons while data is pending', () => {
     render(<StudentTable statuses={undefined} isLoading nowMs={NOW} caption="loading" />);
     expect(screen.queryByRole('table', { description: 'loading' })).not.toBeInTheDocument();

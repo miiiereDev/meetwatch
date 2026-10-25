@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { StudentStatus } from '../api/types';
 import { SessionSelector } from '../components/SessionSelector';
 import { StudentTable } from '../components/StudentTable';
 import { SummaryCards } from '../components/SummaryCards';
@@ -80,10 +81,34 @@ export function History() {
               nowMs={nowMs}
               caption={`Attendance for ${selected.title || selected.meetingCode}`}
               emptyHint="No interval data was recorded for this session."
+              passMark={selected.minAttendancePct}
+            />
+            <PassSummary
+              statuses={detail.data?.report.statuses}
+              passMark={selected.minAttendancePct}
             />
           </Card>
         </>
       ) : null}
     </div>
+  );
+}
+
+function PassSummary({
+  statuses,
+  passMark,
+}: {
+  statuses: StudentStatus[] | undefined;
+  passMark: number;
+}) {
+  if (!statuses || statuses.length === 0) return null;
+  const passing = statuses.filter((s) => s.attendancePct >= passMark).length;
+  return (
+    <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+      <span className="font-medium text-slate-700 dark:text-slate-200">
+        {passing} of {statuses.length}
+      </span>{' '}
+      students met the {passMark}% pass mark.
+    </p>
   );
 }
