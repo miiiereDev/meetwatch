@@ -149,7 +149,7 @@ flowchart LR
 
 Matching order: exact email → stored mapping → fuzzy display-name match (Jaro-Winkler ≥ 0.90
 with a shared token) → email local-part. Anything unmatched is surfaced for manual mapping
-rather than guessed — see `docs/ASSUMPTIONS.md` for every interpretation decision.
+rather than guessed.
 
 ## 🔌 Providers
 
@@ -195,15 +195,13 @@ Layout:
 apps/api         Fastify API: domain, repositories (plain SQL), providers, SSE, migrations
 apps/web         React dashboard: pages, components, query hooks, SSE wiring
 apps/web/scripts Preview generator: JSX + satori renders docs/screenshots/*.svg
-docs/            Assumptions log, Google setup, sample attendance CSV, generated previews
+docs/            Google setup, sample attendance CSV, generated previews
 ```
 
 ## 📚 Documentation
 
 - [docs/GOOGLE_SETUP.md](docs/GOOGLE_SETUP.md) — enabling the live Google Meet provider
   (OAuth consent, scopes, refresh-token storage and security notes).
-- [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) — every interpretation decision the project
-  makes, with reasons.
 - [docs/samples/meet-attendance-sample.csv](docs/samples/meet-attendance-sample.csv) — a
   real-shaped attendance report for the CSV import demo.
 

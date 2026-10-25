@@ -22,6 +22,9 @@ apps/api/data/
 *.sqlite3-wal
 *.sqlite3-shm
 
+# Local project notes (kept on disk, never committed)
+docs/ASSUMPTIONS.md
+
 # Logs
 *.log
 logs/
