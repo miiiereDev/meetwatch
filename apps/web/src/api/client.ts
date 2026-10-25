@@ -88,4 +88,6 @@ export const api = {
   }) => request<AppSettings>('/settings', { method: 'PUT', body: JSON.stringify(body) }),
 
   exportCsvUrl: (sessionId: string) => `/api/sessions/${sessionId}/export.csv`,
+
+  googleAuthUrl: () => request<{ url: string }>('/google/auth-url'),
 };

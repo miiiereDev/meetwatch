@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import type { AppSettings, ProviderName, Student } from '../api/types';
+import { api } from '../api/client';
 import {
   useAttendanceImport,
   useCreateSession,
@@ -555,8 +557,40 @@ function AttendanceImportCard({ settings }: { settings: AppSettings }) {
 }
 
 function GoogleCard({ settings }: { settings: AppSettings }) {
+  const [params] = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+
+  const callbackResult = params.get('google');
+  const callbackMessage: Record<string, string> = {
+    connected: 'Google account connected.',
+    denied: 'Google sign-in was denied.',
+    exchange_failed: 'Google sign-in failed during token exchange — try again.',
+    missing_code: 'Google sign-in returned no authorization code.',
+  };
+
+  async function connect() {
+    setError(null);
+    setConnecting(true);
+    try {
+      const { url } = await api.googleAuthUrl();
+      window.location.assign(url);
+    } catch (err) {
+      setError(String(err));
+      setConnecting(false);
+    }
+  }
+
   return (
     <Card title="Google Meet integration">
+      {callbackResult && callbackMessage[callbackResult] ? (
+        <p
+          role="status"
+          className={`mb-3 text-sm ${callbackResult === 'connected' ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-300'}`}
+        >
+          {callbackMessage[callbackResult]}
+        </p>
+      ) : null}
       {settings.google.configured ? (
         settings.google.connected ? (
           <p className="text-sm text-green-700 dark:text-green-400">
@@ -568,9 +602,14 @@ function GoogleCard({ settings }: { settings: AppSettings }) {
             <p className="text-sm text-slate-600 dark:text-slate-300">
               Connect a Google account with Meet access to start tracking real meetings.
             </p>
-            <a href="/api/google/auth-url" className={buttonClass}>
-              Connect Google account
-            </a>
+            <button
+              type="button"
+              onClick={() => void connect()}
+              disabled={connecting}
+              className={buttonClass}
+            >
+              {connecting ? 'Redirecting…' : 'Connect Google account'}
+            </button>
           </div>
         )
       ) : (
@@ -582,6 +621,11 @@ function GoogleCard({ settings }: { settings: AppSettings }) {
           <code className="rounded bg-slate-100 px-1 dark:bg-slate-700">docs/GOOGLE_SETUP.md</code>.
         </p>
       )}
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">
+          {error}
+        </p>
+      ) : null}
     </Card>
   );
 }
