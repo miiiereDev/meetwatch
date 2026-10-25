@@ -87,9 +87,7 @@ export class GoogleMeetApiClient implements MeetApiClient {
     return records;
   }
 
-  private async listStints(
-    participantName: string,
-  ): Promise<meet_v2.Schema$ParticipantSession[]> {
+  private async listStints(participantName: string): Promise<meet_v2.Schema$ParticipantSession[]> {
     if (!participantName) return [];
     const stints: meet_v2.Schema$ParticipantSession[] = [];
     let pageToken: string | undefined;
