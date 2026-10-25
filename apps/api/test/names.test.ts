@@ -11,8 +11,7 @@ import {
 describe('stripAccents', () => {
   it('removes diacritics', () => {
     expect(stripAccents('José García')).toBe('Jose Garcia');
-    expect(stripAccents(' Zoë '))
-      .toBe(' Zoé '.normalize('NFD').replace(/\p{Diacritic}/gu, ''));
+    expect(stripAccents(' Zoë ')).toBe(' Zoé '.normalize('NFD').replace(/\p{Diacritic}/gu, ''));
   });
 });
 

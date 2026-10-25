@@ -9,7 +9,8 @@ export interface ParticipantIdentity {
   displayName: string;
 }
 
-export type MatchMethod = 'email' | 'mapping-email' | 'mapping-name' | 'email-localpart' | 'fuzzy-name';
+export type MatchMethod =
+  'email' | 'mapping-email' | 'mapping-name' | 'email-localpart' | 'fuzzy-name';
 
 export interface MatchResult {
   student: Student | null;
@@ -41,7 +42,10 @@ function matchByEmailLocalPart(identity: ParticipantIdentity, students: Student[
 }
 
 function matchByMapping(identity: ParticipantIdentity, mappings: Mapping[]): Mapping | null {
-  for (const key of [identity.email ? normalizeEmail(identity.email) : null, normalizeName(identity.displayName)]) {
+  for (const key of [
+    identity.email ? normalizeEmail(identity.email) : null,
+    normalizeName(identity.displayName),
+  ]) {
     if (!key) continue;
     const mapping = mappings.find((m) => m.rawKey === key);
     if (mapping) return mapping;

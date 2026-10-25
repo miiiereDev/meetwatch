@@ -1,10 +1,4 @@
-import type {
-  ClassSession,
-  IntervalRecord,
-  Mapping,
-  ParticipantStatus,
-  Student,
-} from './types.js';
+import type { ClassSession, IntervalRecord, Mapping, ParticipantStatus, Student } from './types.js';
 import { matchParticipant, type MatchMethod, type ParticipantIdentity } from './matching.js';
 
 export interface StudentStatusView {
@@ -103,10 +97,7 @@ export function computeStudentState(
   window: SessionWindow,
 ): StudentStatusView {
   const sorted = [...records].sort((a, b) => Date.parse(a.joinedAt) - Date.parse(b.joinedAt));
-  const clampNow = Math.min(
-    window.nowMs,
-    window.endMs ?? Number.POSITIVE_INFINITY,
-  );
+  const clampNow = Math.min(window.nowMs, window.endMs ?? Number.POSITIVE_INFINITY);
 
   if (sorted.length === 0) {
     return {
@@ -182,7 +173,9 @@ interface IntervalGroup {
   records: IntervalRecord[];
 }
 
-export function groupIntervalsByParticipant(intervals: IntervalRecord[]): Map<string, IntervalGroup> {
+export function groupIntervalsByParticipant(
+  intervals: IntervalRecord[],
+): Map<string, IntervalGroup> {
   const groups = new Map<string, IntervalGroup>();
   for (const record of intervals) {
     let group = groups.get(record.participantKey);

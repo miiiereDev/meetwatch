@@ -7,7 +7,13 @@ import {
 import type { ClassSession, IntervalRecord, Student } from '../src/domain/types.js';
 
 function student(id: string, name: string, section = '10-A'): Student {
-  return { id, name, email: `${id}@student.myschool.edu`, section, createdAt: '2026-01-01T00:00:00.000Z' };
+  return {
+    id,
+    name,
+    email: `${id}@student.myschool.edu`,
+    section,
+    createdAt: '2026-01-01T00:00:00.000Z',
+  };
 }
 
 const SESSION_START = '2026-05-04T09:00:00.000Z';
@@ -25,6 +31,7 @@ function session(patch: Partial<ClassSession> = {}): ClassSession {
     minAttendancePct: 75,
     status: 'active',
     timeScale: 1,
+    clockOffsetMs: 0,
     createdAt: '2026-05-04T08:00:00.000Z',
     ...patch,
   };
@@ -194,15 +201,25 @@ describe('computeStudentState', () => {
 });
 
 describe('computeSessionReport', () => {
-  const roster = [student('s1', 'Ava Thompson'), student('s2', 'Liam Rivera'), student('s3', 'Sofia Nguyen')];
+  const roster = [
+    student('s1', 'Ava Thompson'),
+    student('s2', 'Liam Rivera'),
+    student('s3', 'Sofia Nguyen'),
+  ];
 
   it('summarizes online/left/absent and late counts', () => {
     const report = computeSessionReport({
       session: session(),
       students: roster,
       intervals: [
-        interval('s1', '2026-05-04T08:59:00.000Z', null, { email: 's1@student.myschool.edu', displayName: 'Ava Thompson' }),
-        interval('s2', '2026-05-04T09:12:00.000Z', '2026-05-04T09:20:00.000Z', { email: 's2@student.myschool.edu', displayName: 'Liam Rivera' }),
+        interval('s1', '2026-05-04T08:59:00.000Z', null, {
+          email: 's1@student.myschool.edu',
+          displayName: 'Ava Thompson',
+        }),
+        interval('s2', '2026-05-04T09:12:00.000Z', '2026-05-04T09:20:00.000Z', {
+          email: 's2@student.myschool.edu',
+          displayName: 'Liam Rivera',
+        }),
       ],
       mappings: [],
       now: new Date('2026-05-04T09:30:00.000Z'),
@@ -289,11 +306,7 @@ describe('computeSessionReport', () => {
       now: new Date('2026-05-04T09:30:00.000Z'),
     });
     const kinds = report.activity.map((a) => `${a.kind}:${a.displayName}`);
-    expect(kinds).toEqual([
-      'join:Liam Rivera',
-      'leave:Ava Thompson',
-      'join:Ava Thompson',
-    ]);
+    expect(kinds).toEqual(['join:Liam Rivera', 'leave:Ava Thompson', 'join:Ava Thompson']);
     expect(report.activity[0]!.at).toBe('2026-05-04T09:10:00.000Z');
   });
 
@@ -313,9 +326,7 @@ describe('computeSessionReport', () => {
     const report = computeSessionReport({
       session: session(),
       students: roster,
-      intervals: [
-        interval('s1', '2026-05-04T09:00:00.000Z', '2026-05-04T09:22:30.000Z'),
-      ],
+      intervals: [interval('s1', '2026-05-04T09:00:00.000Z', '2026-05-04T09:22:30.000Z')],
       mappings: [],
       now: new Date('2026-05-04T09:30:00.000Z'),
     });

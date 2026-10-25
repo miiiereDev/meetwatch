@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { FUZZY_NAME_THRESHOLD, matchParticipant, participantRawKey } from '../src/domain/matching.js';
+import {
+  FUZZY_NAME_THRESHOLD,
+  matchParticipant,
+  participantRawKey,
+} from '../src/domain/matching.js';
 import type { Mapping, Student } from '../src/domain/types.js';
 
 function student(id: string, name: string, email: string, section = '10-A'): Student {
@@ -34,21 +38,17 @@ describe('matchParticipant', () => {
   });
 
   it('matches via a persisted mapping keyed by email', () => {
-    const result = matchParticipant(
-      { email: 'ava.t@gmail.com', displayName: 'Ava T' },
-      students,
-      [mapping('ava.t@gmail.com', 'Ava T', 's1')],
-    );
+    const result = matchParticipant({ email: 'ava.t@gmail.com', displayName: 'Ava T' }, students, [
+      mapping('ava.t@gmail.com', 'Ava T', 's1'),
+    ]);
     expect(result.student?.id).toBe('s1');
     expect(result.method).toBe('mapping-email');
   });
 
   it('matches via a persisted mapping keyed by display name when no email', () => {
-    const result = matchParticipant(
-      { email: null, displayName: 'Android User 79152' },
-      students,
-      [mapping('android user 79152', 'Android User 79152', 's2')],
-    );
+    const result = matchParticipant({ email: null, displayName: 'Android User 79152' }, students, [
+      mapping('android user 79152', 'Android User 79152', 's2'),
+    ]);
     expect(result.student?.id).toBe('s2');
     expect(result.method).toBe('mapping-name');
   });
@@ -64,11 +64,7 @@ describe('matchParticipant', () => {
   });
 
   it('matches by fuzzy display name with typo above the threshold', () => {
-    const result = matchParticipant(
-      { email: null, displayName: 'Ava Thomspn' },
-      students,
-      [],
-    );
+    const result = matchParticipant({ email: null, displayName: 'Ava Thomspn' }, students, []);
     expect(result.student?.id).toBe('s1');
     expect(result.method).toBe('fuzzy-name');
     expect(result.score).toBeGreaterThanOrEqual(FUZZY_NAME_THRESHOLD);
@@ -82,11 +78,9 @@ describe('matchParticipant', () => {
 
   it('prefers mapping over fuzzy matching', () => {
     // "Ava T" alone would fuzzy-match Ava, but the mapping says it is Liam.
-    const result = matchParticipant(
-      { email: null, displayName: 'Ava T' },
-      students,
-      [mapping('ava t', 'Ava T', 's2')],
-    );
+    const result = matchParticipant({ email: null, displayName: 'Ava T' }, students, [
+      mapping('ava t', 'Ava T', 's2'),
+    ]);
     expect(result.student?.id).toBe('s2');
     expect(result.method).toBe('mapping-name');
   });

@@ -17,15 +17,15 @@ never joined, who was late — per class session, with live updates and attendan
 
 ## Scripts
 
-| Command              | What it does                     |
-| -------------------- | -------------------------------- |
-| `pnpm install`       | Install all workspace packages   |
-| `pnpm dev`           | Run API + web in watch mode      |
-| `pnpm build`         | Production build of both apps    |
-| `pnpm test`          | Run all Vitest suites            |
-| `pnpm typecheck`     | TypeScript project checks        |
-| `pnpm lint`          | ESLint                           |
-| `pnpm format`        | Prettier write                   |
-| `pnpm quality`       | typecheck + lint + test          |
+| Command          | What it does                   |
+| ---------------- | ------------------------------ |
+| `pnpm install`   | Install all workspace packages |
+| `pnpm dev`       | Run API + web in watch mode    |
+| `pnpm build`     | Production build of both apps  |
+| `pnpm test`      | Run all Vitest suites          |
+| `pnpm typecheck` | TypeScript project checks      |
+| `pnpm lint`      | ESLint                         |
+| `pnpm format`    | Prettier write                 |
+| `pnpm quality`   | typecheck + lint + test        |
 
 See `docs/GOOGLE_SETUP.md` for connecting the real Google Meet provider.
