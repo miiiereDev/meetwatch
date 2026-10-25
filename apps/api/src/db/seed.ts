@@ -47,6 +47,8 @@ export interface SeedOptions {
   /** Length of a class session in minutes. */
   durationMinutes?: number;
   now?: Date;
+  /** When false, only the roster is seeded (non-simulator providers). */
+  seedSessions?: boolean;
 }
 
 export interface SeedResult {
@@ -79,10 +81,17 @@ export function ensureSeed(db: DB, options: SeedOptions = {}): SeedResult {
   const minAttendance = options.minAttendancePct ?? 75;
   const speed = options.simulatorSpeed ?? 1;
 
+  let seededSessions = 0;
+  if (options.seedSessions === false) {
+    return { seededStudents, seededSessions };
+  }
+
+  // Today's demo session starts shortly after boot so the dashboard comes
+  // alive right away; the simulator then plays it at the configured speed.
+  const todayStart = new Date(now.getTime() + 30_000);
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
   yesterday.setHours(9, 0, 0, 0);
-  const todayStart = new Date(now.getTime() + 2 * 60_000);
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(9, 0, 0, 0);
@@ -117,7 +126,6 @@ export function ensureSeed(db: DB, options: SeedOptions = {}): SeedResult {
     },
   ];
 
-  let seededSessions = 0;
   for (const plan of planned) {
     const startIso = plan.start.toISOString();
     const endIso = new Date(plan.start.getTime() + durationMin * 60_000).toISOString();
