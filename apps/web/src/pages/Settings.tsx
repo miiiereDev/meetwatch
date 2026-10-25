@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import type { AppSettings, ProviderName, Student } from '../api/types';
 import {
   useCreateSession,
+  useDeleteMapping,
+  useMappings,
   useRoster,
   useRosterMutations,
   useSettings,
@@ -50,6 +52,7 @@ export function Settings() {
         settings={settings}
       />
       <RosterCard students={roster?.students ?? []} isLoading={rosterLoading} />
+      <MappingsCard />
       <GoogleCard settings={settings} />
     </div>
   );
@@ -393,6 +396,78 @@ function RosterCard({ students, isLoading }: { students: Student[]; isLoading: b
           </table>
         </div>
       )}
+    </Card>
+  );
+}
+
+function MappingsCard() {
+  const { data, isLoading, isError, error, refetch } = useMappings();
+  const deleteMapping = useDeleteMapping();
+  const mappings = data?.mappings ?? [];
+
+  return (
+    <Card title={`Participant mappings (${mappings.length})`}>
+      <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+        Manual matches between Meet participants and roster students, remembered across sessions.
+        Remove one to send that participant back to the “unknown” panel.
+      </p>
+      {isLoading ? (
+        <Spinner label="Loading mappings" />
+      ) : isError ? (
+        <ErrorState message={String(error)} onRetry={() => void refetch()} />
+      ) : mappings.length === 0 ? (
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          No manual mappings yet. Everything matched the roster automatically.
+        </p>
+      ) : (
+        <div className="max-h-64 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-left text-xs tracking-wide text-slate-500 uppercase dark:bg-slate-700 dark:text-slate-300">
+              <tr>
+                <th scope="col" className="px-3 py-2">
+                  Participant
+                </th>
+                <th scope="col" className="px-3 py-2">
+                  Matched student
+                </th>
+                <th scope="col" className="px-3 py-2">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              {mappings.map((m) => (
+                <tr key={m.id}>
+                  <td className="px-3 py-1.5 text-slate-800 dark:text-slate-100">
+                    {m.rawName || m.rawKey}
+                    {m.rawEmail ? (
+                      <span className="text-slate-500 dark:text-slate-400"> · {m.rawEmail}</span>
+                    ) : null}
+                  </td>
+                  <td className="px-3 py-1.5 text-slate-600 dark:text-slate-300">
+                    {m.studentName ?? m.studentId}
+                  </td>
+                  <td className="px-3 py-1.5 text-right">
+                    <button
+                      type="button"
+                      onClick={() => deleteMapping.mutate(m.id)}
+                      disabled={deleteMapping.isPending}
+                      className="text-xs font-medium text-red-600 hover:text-red-800 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 dark:text-red-400"
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {deleteMapping.isError ? (
+        <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">
+          {String(deleteMapping.error)}
+        </p>
+      ) : null}
     </Card>
   );
 }

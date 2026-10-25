@@ -41,6 +41,17 @@ export function useCreateMapping() {
   });
 }
 
+export function useDeleteMapping() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.deleteMapping,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['mappings'] });
+      void qc.invalidateQueries({ queryKey: ['session'] });
+    },
+  });
+}
+
 export function useUpdateSettings() {
   const qc = useQueryClient();
   return useMutation({
