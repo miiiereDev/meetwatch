@@ -65,7 +65,7 @@ describe('settings API', () => {
     expect(created.json().session.timeScale).toBe(40);
   });
 
-  it('switches providers and records errors for unconfigured ones', async () => {
+  it('switches providers: csv waits idle, unconfigured google errors', async () => {
     const app = await testApp();
     const switched = await app.inject({
       method: 'PUT',
@@ -74,7 +74,16 @@ describe('settings API', () => {
     });
     expect(switched.statusCode).toBe(200);
     expect(switched.json().provider).toBe('csv');
-    expect(switched.json().providerStatus.state).toBe('error');
+    // The csv provider starts fine; it waits for an upload.
+    expect(switched.json().providerStatus.state).toBe('idle');
+
+    const google = await app.inject({
+      method: 'PUT',
+      url: '/api/settings',
+      payload: { provider: 'google' },
+    });
+    expect(google.json().provider).toBe('google');
+    expect(google.json().providerStatus.state).toBe('error');
 
     const back = await app.inject({
       method: 'PUT',

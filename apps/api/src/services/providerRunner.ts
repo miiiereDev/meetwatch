@@ -1,4 +1,5 @@
 import { SimulatorProvider } from '../providers/simulator.js';
+import { CsvImportProvider } from '../providers/csvImport.js';
 import type {
   MeetProvider,
   ProviderName,
@@ -20,7 +21,7 @@ export function createProvider(name: ProviderName): MeetProvider {
         'google provider requires Google OAuth configuration (see docs/GOOGLE_SETUP.md)',
       );
     case 'csv':
-      throw new Error('csv provider is driven by uploads via POST /api/import/attendance');
+      return new CsvImportProvider();
   }
 }
 
@@ -39,6 +40,11 @@ export class ProviderRunner {
 
   currentName(): ProviderName | null {
     return this.provider?.name ?? null;
+  }
+
+  /** The running provider instance, for capability checks (e.g. CSV import). */
+  active(): MeetProvider | null {
+    return this.provider;
   }
 
   async start(): Promise<void> {

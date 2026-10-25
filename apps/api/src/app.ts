@@ -8,6 +8,7 @@ import { sessionRoutes } from './routes/sessions.js';
 import { rosterRoutes } from './routes/roster.js';
 import { mappingRoutes } from './routes/mappings.js';
 import { settingsRoutes } from './routes/settings.js';
+import { importRoutes } from './routes/import.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -71,6 +72,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Fastify
   await app.register(rosterRoutes, { prefix: '/api' });
   await app.register(mappingRoutes, { prefix: '/api' });
   await app.register(settingsRoutes, { prefix: '/api' });
+  await app.register(importRoutes, { prefix: '/api' });
 
   app.addHook('onClose', async (instance) => {
     await instance.ctx.close();
