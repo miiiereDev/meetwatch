@@ -3,7 +3,10 @@ import { mkdirSync } from 'node:fs';
 import type { DB } from './db/client.js';
 import { openDatabase } from './db/client.js';
 import { ensureSeed } from './db/seed.js';
+import type { ClassSession } from './domain/types.js';
 import type { Env } from './env.js';
+import type { SessionStatusReport } from './domain/status.js';
+import { computeSessionReport, sessionEffectiveNow } from './domain/status.js';
 import { IntervalRepo } from './repositories/intervals.js';
 import { MappingRepo } from './repositories/mappings.js';
 import { SessionRepo } from './repositories/sessions.js';
@@ -26,6 +29,8 @@ export interface ServerContext {
   hub: SseHub;
   ingest: IngestService;
   runner: ProviderRunner;
+  /** Computes the live report for a session at an effective "now". */
+  report(session: ClassSession, wallMs?: number): SessionStatusReport;
   close(): Promise<void>;
 }
 
@@ -86,6 +91,16 @@ export function buildContext(options: BuildContextOptions): ServerContext {
     hub,
     ingest,
     runner,
+    report(session: ClassSession, wallMs = Date.now()): SessionStatusReport {
+      const now = sessionEffectiveNow(session, wallMs);
+      return computeSessionReport({
+        session,
+        students: students.list(),
+        intervals: intervals.listBySession(session.id),
+        mappings: mappings.list(),
+        now,
+      });
+    },
     async close() {
       await runner.stop();
       hub.stop();

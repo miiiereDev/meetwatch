@@ -4,6 +4,10 @@ import { loadEnv, type Env } from './env.js';
 import { buildContext, type BuildContextOptions, type ServerContext } from './context.js';
 import { healthRoutes } from './routes/health.js';
 import { sseRoutes } from './routes/sse.js';
+import { sessionRoutes } from './routes/sessions.js';
+import { rosterRoutes } from './routes/roster.js';
+import { mappingRoutes } from './routes/mappings.js';
+import { settingsRoutes } from './routes/settings.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -54,8 +58,19 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Fastify
     credentials: true,
   });
 
+  // Raw CSV bodies (roster import, attendance import).
+  app.addContentTypeParser(
+    ['text/csv', 'application/csv', 'application/vnd.ms-excel'],
+    { parseAs: 'string' },
+    (_req, body, done) => done(null, body),
+  );
+
   await app.register(healthRoutes, { prefix: '/api' });
   await app.register(sseRoutes, { prefix: '/api' });
+  await app.register(sessionRoutes, { prefix: '/api' });
+  await app.register(rosterRoutes, { prefix: '/api' });
+  await app.register(mappingRoutes, { prefix: '/api' });
+  await app.register(settingsRoutes, { prefix: '/api' });
 
   app.addHook('onClose', async (instance) => {
     await instance.ctx.close();
