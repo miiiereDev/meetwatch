@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-status-online: #16a34a;
+  --color-status-left: #f59e0b;
+  --color-status-absent: #94a3b8;
+}
+
+html {
+  color-scheme: light dark;
+}
