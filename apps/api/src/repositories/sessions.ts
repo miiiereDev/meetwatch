@@ -3,6 +3,7 @@ import type { DB } from '../db/client.js';
 import type { ClassSession, SessionStatus } from '../domain/types.js';
 
 interface SessionRow {
+  clock_offset_ms: number;
   id: string;
   title: string;
   section: string;
@@ -28,6 +29,7 @@ function toSession(row: SessionRow): ClassSession {
     minAttendancePct: row.min_attendance_pct,
     status: row.status,
     timeScale: row.time_scale,
+    clockOffsetMs: row.clock_offset_ms,
     createdAt: row.created_at,
   };
 }
@@ -42,6 +44,7 @@ export interface CreateSessionInput {
   minAttendancePct?: number;
   status?: SessionStatus;
   timeScale?: number;
+  clockOffsetMs?: number;
 }
 
 export class SessionRepo {
@@ -60,8 +63,31 @@ export class SessionRepo {
     return row ? toSession(row) : null;
   }
 
-  /** Finds a session by meeting code whose start falls on the given calendar day (UTC). */
-  getByMeetingCodeOnDay(meetingCode: string, isoDate: string): ClassSession | null {
+  /**
+   * Resolves the session an event belongs to. Prefers a non-ended session
+   * whose window contains `atIso`, else the closest past session, else the
+   * most recent one with that code.
+   */
+  resolveByMeetingCode(meetingCode: string, atIso: string): ClassSession | null {
+    const at = Date.parse(atIso);
+    const candidates = this.list().filter((s) => s.meetingCode === meetingCode);
+    if (candidates.length === 0) return null;
+    const live = candidates.filter((s) => {
+      const end = s.endsAt ? Date.parse(s.endsAt) : Number.POSITIVE_INFINITY;
+      return s.status !== 'ended' && Date.parse(s.startsAt) <= at && at <= end;
+    });
+    if (live.length > 0) return live[0]!;
+    const past = candidates
+      .filter((s) => Date.parse(s.startsAt) <= at)
+      .sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt));
+    if (past.length > 0) return past[0]!;
+    return candidates.sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt))[0] ?? null;
+  }
+
+  /** Finds a session by meeting code whose start falls on the given calendar day (UTC). */ getByMeetingCodeOnDay(
+    meetingCode: string,
+    isoDate: string,
+  ): ClassSession | null {
     const row = this.db
       .prepare(
         `SELECT * FROM class_sessions
@@ -93,14 +119,15 @@ export class SessionRepo {
       minAttendancePct: input.minAttendancePct ?? 75,
       status: input.status ?? 'scheduled',
       timeScale: input.timeScale ?? 1,
+      clockOffsetMs: input.clockOffsetMs ?? 0,
       createdAt: new Date().toISOString(),
     };
     this.db
       .prepare(
         `INSERT INTO class_sessions
            (id, title, section, meeting_code, starts_at, ends_at,
-            late_threshold_minutes, min_attendance_pct, status, time_scale, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            late_threshold_minutes, min_attendance_pct, status, time_scale, clock_offset_ms, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         session.id,
@@ -113,6 +140,7 @@ export class SessionRepo {
         session.minAttendancePct,
         session.status,
         session.timeScale,
+        session.clockOffsetMs,
         session.createdAt,
       );
     return session;
@@ -132,6 +160,7 @@ export class SessionRepo {
         | 'minAttendancePct'
         | 'status'
         | 'timeScale'
+        | 'clockOffsetMs'
       >
     >,
   ): ClassSession | null {
@@ -142,7 +171,7 @@ export class SessionRepo {
       .prepare(
         `UPDATE class_sessions SET
            title = ?, section = ?, meeting_code = ?, starts_at = ?, ends_at = ?,
-           late_threshold_minutes = ?, min_attendance_pct = ?, status = ?, time_scale = ?
+           late_threshold_minutes = ?, min_attendance_pct = ?, status = ?, time_scale = ?, clock_offset_ms = ?
          WHERE id = ?`,
       )
       .run(
@@ -155,6 +184,7 @@ export class SessionRepo {
         next.minAttendancePct,
         next.status,
         next.timeScale,
+        next.clockOffsetMs,
         id,
       );
     return next;

@@ -22,6 +22,8 @@ export interface ClassSession {
   status: SessionStatus;
   /** Simulator time scale: 1 = real time, 20 = 45 min plays in ~2 min. */
   timeScale: number;
+  /** Simulator clock offset (ms) vs wall clock; 0 for real-time providers. */
+  clockOffsetMs: number;
   createdAt: string;
 }
 
